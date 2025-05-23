@@ -29,6 +29,6 @@ jobs:
             fi
             sudo git checkout ${{ github.ref_name }}
             sudo git pull
-            sudo cp .deployment/.env-develop .env
+            sudo cp .deployment/.env-main .env
             sudo docker compose -f docker-compose.yml --env-file .env up -d --build
             sudo sh create-tag.sh
