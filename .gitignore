@@ -1,0 +1,7 @@
+node_modules
+postman
+temp
+.env
+build
+my-docs
+docs

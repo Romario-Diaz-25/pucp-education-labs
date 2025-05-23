@@ -1,0 +1,21 @@
+version: "2.1"
+
+networks:
+  gcp_network:
+    name: ${DOCKER_NETWORK}
+    driver: bridge
+    external: true
+
+services:      
+  ms.trading-pair:
+    labels:
+      svc: "ms-trading-pair"
+    restart: always
+    container_name: ms.trading-pair
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    ports:
+      - "30008:3000"
+    networks:
+      - gcp_network
