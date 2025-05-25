@@ -1,42 +1,28 @@
+import { IStudentSchema } from "./interfaces/students/student-schema.interface";
 import { IStudent } from "./interfaces/students/student.interface";
 
 export class Student {
-  private id: number;
-  private firstName: string;
-  private lastName: string;
-  private age: number;
+  private constructor(
+    private id: number,
+    private firstName: string,
+    private lastName: string,
+    private age: number
+  ) {}
 
-  constructor(student: IStudent) {
-    this.id = student.id;
-    this.firstName = student.firstName;
-    this.lastName = student.lastName;
-    this.age = student.age;
-  }
-
-  public getId(): number {
+  getId(): number {
     return this.id;
   }
-  public getFirstName(): string {
-    return this.firstName;
+
+  static create(student: IStudent): Student {
+    const studentCreated = new Student(
+      student.id,
+      student.firstName,
+      student.lastName,
+      student.age
+    );
+    return studentCreated;
   }
-  public getLastName(): string {
-    return this.lastName;
-  }
-  public getAge(): number {
-    return this.age;
-  }
-  public setId(id: number): void {
-    this.id = id;
-  }
-  public setFirstName(firstName: string): void {
-    this.firstName = firstName;
-  }
-  public setLastName(lastName: string): void {
-    this.lastName = lastName;
-  }
-  public setAge(age: number): void {
-    this.age = age;
-  }
+
   public toJSON(): IStudent {
     return {
       id: this.id,
@@ -45,7 +31,21 @@ export class Student {
       age: this.age,
     };
   }
-  public static fromJSON(json: IStudent): Student {
-    return new Student(json);
+  public toSchema(): IStudentSchema {
+    return {
+      id: this.id,
+      firstName: this.firstName,
+      lastName: this.lastName,
+      age: this.age,
+    };
+  }
+
+  public static fromSchema(schema: IStudentSchema): Student {
+    return new Student(
+      schema.id,
+      schema.firstName,
+      schema.lastName,
+      schema.age
+    );
   }
 }

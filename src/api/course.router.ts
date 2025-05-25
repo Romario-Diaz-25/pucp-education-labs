@@ -1,11 +1,12 @@
 import { Router } from "express";
-import { RouterBase } from "./router-base";
-import { StudentController } from "../application/controllers/students.controller";
-import { IRepositories } from "../application/model/common/repositories.interfaces";
 
-export class StudentRouter extends RouterBase<StudentController> {
+import { IRepositories } from "../application/model/common/repositories.interfaces";
+import { RouterBase } from "./router-base";
+import { CourseController } from "../application/controllers/course.controller";
+
+export class StudentRouter extends RouterBase<CourseController> {
   constructor(context: IRepositories) {
-    super(StudentController, context, "students");
+    super(CourseController, context, "courses");
   }
 
   routes(): void {

@@ -1,25 +1,24 @@
 import { IDatabase } from "../../../infrastructure/database/mysql/mysql";
 import { ISchema } from "../../../infrastructure/database/mysql/table-builder/interfaces/schema.interface";
-import { AppDate } from "../../../infrastructure/lib/app-date";
 import { errorHandler } from "../../../infrastructure/lib/error-handler";
 import {
   notFoundError,
   notModifiedError,
 } from "../../../infrastructure/lib/handler-error";
 import { lang } from "../../../infrastructure/lib/lang";
-import { IStudentRepository } from "../../model/interfaces/students/student-repository.interface";
-import { IStudentSchema } from "../../model/interfaces/students/student-schema.interface";
-import { Student } from "../../model/Student";
-import { StudentSchema } from "./student.schema";
+import { Course } from "../../model/Course";
+import { ICourseRepository } from "../../model/interfaces/courses/course-repository.interface";
+import { ICourseSchema } from "../../model/interfaces/courses/course-schema.interface";
+import { CourseSchema } from "./course.schema";
 
-export class StudentsRepository implements IStudentRepository {
-  tableName = "Students";
+export class CourseRepository implements ICourseRepository {
+  tableName = "Courses";
   selectableProps: string[] = [];
   db: IDatabase;
-  private tableSchema: ISchema<IStudentSchema>[];
+  private tableSchema: ISchema<ICourseSchema>[];
   constructor(readonly mysql: IDatabase) {
     this.db = mysql;
-    this.tableSchema = StudentSchema;
+    this.tableSchema = CourseSchema;
     this.buildSelectableProps();
   }
 
@@ -31,7 +30,7 @@ export class StudentsRepository implements IStudentRepository {
     }
   }
 
-  async create(data: IStudentSchema): Promise<{ insertedId: number }> {
+  async create(data: ICourseSchema): Promise<{ insertedId: number }> {
     try {
       const [insertedId] = await this.db.from(this.tableName).insert(data);
 
@@ -48,7 +47,7 @@ export class StudentsRepository implements IStudentRepository {
     }
   }
 
-  async find(filters?: Partial<IStudentSchema>): Promise<Student[]> {
+  async find(filters?: Partial<ICourseSchema>): Promise<Course[]> {
     try {
       const query = this.db
         .select(this.selectableProps)
@@ -58,19 +57,19 @@ export class StudentsRepository implements IStudentRepository {
 
       const result = await query;
 
-      return result.map((res) => Student.create(res));
+      return result.map((res) => Course.create(res));
     } catch (error) {
       throw errorHandler(error, lang.__("internalServerError"));
     }
   }
 
-  async findById(id: number): Promise<Student> {
+  async findById(id: number): Promise<Course> {
     try {
       const query = await this.db
         .select(this.selectableProps)
         .from(this.tableName)
-        .where({ id })
         .whereNull("deleted_at")
+        .where({ id })
         .first();
 
       if (!query)
@@ -78,7 +77,7 @@ export class StudentsRepository implements IStudentRepository {
           lang.__("common.error.notFound", { value: this.tableName })
         );
 
-      return Student.create(query);
+      return Course.create(query);
     } catch (error) {
       throw errorHandler(error, lang.__("internalServerError"));
     }
@@ -86,13 +85,14 @@ export class StudentsRepository implements IStudentRepository {
 
   async update(
     id: number,
-    data: Partial<IStudentSchema>
+    data: Partial<ICourseSchema>
   ): Promise<{ modifiedCount: number }> {
     try {
       const updateResult = await this.db
         .from(this.tableName)
         .update(data)
-        .where({ id });
+        .where({ id })
+        .whereNull("deleted_at");
 
       if (!updateResult)
         throw notModifiedError(
@@ -109,7 +109,7 @@ export class StudentsRepository implements IStudentRepository {
     try {
       const deleteResult = await this.db
         .from(this.tableName)
-        .update({ deleted_at: new AppDate().toMYSQLDatetime() })
+        .del()
         .where({ id });
 
       if (!deleteResult)

@@ -1,12 +1,12 @@
 import { IRepositories } from "../model/common/repositories.interfaces";
-import { IStudentRepository } from "../model/interfaces/students/student-repository.interface";
-import { IStudent } from "../model/interfaces/students/student.interface";
-import { Student } from "../model/Student";
+import { Course } from "../model/Course";
+import { ICourseRepository } from "../model/interfaces/courses/course-repository.interface";
+import { ICourse } from "../model/interfaces/courses/course.interface";
 
-export class StudentService {
-  private repository: IStudentRepository;
+export class CourseService {
+  private repository: ICourseRepository;
   constructor(context: IRepositories) {
-    this.repository = context.studentRepository;
+    this.repository = context.courseRepository;
   }
 
   async find() {
@@ -27,19 +27,19 @@ export class StudentService {
     }
   }
 
-  async create(data: IStudent) {
+  async create(data: ICourse) {
     try {
-      const student = Student.create(data);
-      const result = await this.repository.create(student.toSchema());
+      const course = Course.create(data);
+      const result = await this.repository.create(course.toSchema());
       return result;
     } catch (error) {
       return error;
     }
   }
-  async update(id: number, data: IStudent) {
+  async update(id: number, data: ICourse) {
     try {
-      const student = Student.create(data);
-      const result = await this.repository.update(id, student.toSchema());
+      const course = Course.create(data);
+      const result = await this.repository.update(id, course.toSchema());
       return result;
     } catch (error) {
       return error;

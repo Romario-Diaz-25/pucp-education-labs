@@ -1,13 +1,13 @@
-import { IStudent } from "./student.interface";
+import { Student } from "../../Student";
+import { IStudentSchema } from "./student-schema.interface";
 
 export interface IStudentRepository {
-  create(data: IStudent): Promise<{ insertedId: number }>;
-  find(): Promise<IStudent[]>;
-  findById(id: number): Promise<IStudent>;
-  findOne(params: Partial<IStudent>): Promise<IStudent>;
+  create(data: IStudentSchema): Promise<{ insertedId: number }>;
+  find(): Promise<Student[]>;
+  findById(id: number): Promise<Student>;
   update(
     id: number,
-    data: Partial<IStudent>
+    data: Partial<IStudentSchema>
   ): Promise<{ modifiedCount: number }>;
   delete(id: number): Promise<{ deletedCount: number }>;
 }
