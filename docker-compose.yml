@@ -7,7 +7,7 @@ networks:
     external: true
 
 services:      
-  ms.trading-pair:
+  ms.education-labs:
     labels:
       svc: "ms-education-labs"
     restart: always

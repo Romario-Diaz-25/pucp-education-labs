@@ -1,7 +1,7 @@
 {
-  "name": "worldbinary-ms-trading-pair",
+  "name": "education-labs",
   "version": "1.0.0",
-  "description": "Microservicio Trading Pair",
+  "description": "Plataforma de educación online",
   "main": "index.ts",
   "scripts": {
     "dev": "npx nodemon index.ts",
