@@ -1,10 +1,14 @@
+import { Exam } from "../../Exam";
+import { IExamSchema } from "./exam-schema.interface";
 import { IExam } from "./exam.interface";
 
 export interface IExamRepository {
-  create(data: IExam): Promise<{ insertedId: number }>;
-  find(): Promise<IExam[]>;
-  findById(id: number): Promise<IExam>;
-  findOne(params: Partial<IExam>): Promise<IExam>;
-  update(id: number, data: Partial<IExam>): Promise<{ modifiedCount: number }>;
+  create(data: IExamSchema): Promise<{ insertedId: number }>;
+  find(): Promise<Exam[]>;
+  findById(id: number): Promise<Exam>;
+  update(
+    id: number,
+    data: Partial<IExamSchema>
+  ): Promise<{ modifiedCount: number }>;
   delete(id: number): Promise<{ deletedCount: number }>;
 }

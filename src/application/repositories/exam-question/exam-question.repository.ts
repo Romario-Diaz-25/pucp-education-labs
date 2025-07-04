@@ -7,19 +7,20 @@ import {
   notModifiedError,
 } from "../../../infrastructure/lib/handler-error";
 import { lang } from "../../../infrastructure/lib/lang";
-import { Exam } from "../../model/Exam";
-import { IExamRepository } from "../../model/interfaces/exams/exam-repository.interface";
-import { IExamSchema } from "../../model/interfaces/exams/exam-schema.interface";
-import { ExamSchema } from "./exam.schema";
+import { ExamQuestion } from "../../model/ExamQuestion";
+import { IExamQuestionRepository } from "../../model/interfaces/exam-questions/exam-question-repository.interface";
+import { IExamQuestionSchema } from "../../model/interfaces/exam-questions/exam-question-schema.interface";
+import { IExamQuestion } from "../../model/interfaces/exam-questions/exam-question.interface";
+import { ExamQuestionSchema } from "./exam-question.schema";
 
-export class ExamRepository implements IExamRepository {
-  tableName = "Exams";
+export class ExamQuestionRepository implements IExamQuestionRepository {
+  tableName = "ExamQuestions";
   selectableProps: string[] = [];
   db: IDatabase;
-  private tableSchema: ISchema<IExamSchema>[];
+  private tableSchema: ISchema<IExamQuestionSchema>[];
   constructor(readonly mysql: IDatabase) {
     this.db = mysql;
-    this.tableSchema = ExamSchema;
+    this.tableSchema = ExamQuestionSchema;
     this.buildSelectableProps();
   }
 
@@ -31,7 +32,7 @@ export class ExamRepository implements IExamRepository {
     }
   }
 
-  async create(data: IExamSchema): Promise<{ insertedId: number }> {
+  async create(data: IExamQuestionSchema): Promise<{ insertedId: number }> {
     try {
       const [insertedId] = await this.db.from(this.tableName).insert(data);
 
@@ -48,27 +49,73 @@ export class ExamRepository implements IExamRepository {
     }
   }
 
-  async find(filters?: Partial<IExamSchema>): Promise<Exam[]> {
+  async find(filters?: Partial<IExamQuestionSchema>): Promise<ExamQuestion[]> {
     try {
       const query = this.db
         .select(this.selectableProps)
         .from(this.tableName)
+        .whereNull("deleted_at")
         .where({ ...filters });
 
       const result = await query;
 
-      return result.map((res) => Exam.create(res));
+      return result.map((res) => ExamQuestion.create(res));
     } catch (error) {
       throw errorHandler(error, lang.__("internalServerError"));
     }
   }
 
-  async findById(id: number): Promise<Exam> {
+  async findByExamId(examId: number): Promise<ExamQuestion[]> {
+    try {
+      const query = await this.db.raw(
+        `
+          SELECT
+            q.id,
+            q.questionText,
+            q.examId,
+            CONCAT(
+              '[', 
+              GROUP_CONCAT(JSON_QUOTE(a.response) ORDER BY a.id SEPARATOR ','), 
+              ']'
+            ) AS answerOptions,
+            (
+              SELECT COUNT(*)
+              FROM ExamAnswers AS a2
+              WHERE a2.examQuestionId = q.id
+                AND a2.id < (
+                  SELECT a3.id
+                  FROM ExamAnswers AS a3
+                  WHERE a3.examQuestionId = q.id
+                    AND a3.isCorrect = TRUE
+                  LIMIT 1
+                )
+            ) AS correctAnswerIndex
+          FROM ExamQuestions AS q
+          JOIN ExamAnswers   AS a ON a.examQuestionId = q.id
+          WHERE q.examId = ?
+          GROUP BY q.id, q.questionText;
+          `,
+        [examId]
+      );
+
+      const result = query[0].map((q: IExamQuestion) => ({
+        ...q,
+        answerOptions: JSON.parse((q.answerOptions as string) || ""),
+      }));
+
+      return result.map((res: any) => ExamQuestion.create(res));
+    } catch (error) {
+      throw errorHandler(error, lang.__("internalServerError"));
+    }
+  }
+
+  async findById(id: number): Promise<ExamQuestion> {
     try {
       const query = await this.db
         .select(this.selectableProps)
         .from(this.tableName)
         .where({ id })
+        .whereNull("deleted_at")
         .first();
 
       if (!query)
@@ -76,7 +123,7 @@ export class ExamRepository implements IExamRepository {
           lang.__("common.error.notFound", { value: this.tableName })
         );
 
-      return Exam.create(query);
+      return ExamQuestion.create(query);
     } catch (error) {
       throw errorHandler(error, lang.__("internalServerError"));
     }
@@ -84,7 +131,7 @@ export class ExamRepository implements IExamRepository {
 
   async update(
     id: number,
-    data: Partial<IExamSchema>
+    data: Partial<IExamQuestionSchema>
   ): Promise<{ modifiedCount: number }> {
     try {
       const updateResult = await this.db
@@ -107,7 +154,7 @@ export class ExamRepository implements IExamRepository {
     try {
       const deleteResult = await this.db
         .from(this.tableName)
-        .del()
+        .update({ deleted_at: new AppDate().toMYSQLDatetime() })
         .where({ id });
 
       if (!deleteResult)

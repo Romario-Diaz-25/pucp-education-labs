@@ -4,4 +4,5 @@ export interface IExam {
   description: string;
   maxScore: number;
   minimumScoreToApprove: number;
+  icon: string;
 }
